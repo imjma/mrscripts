@@ -1,3 +1,7 @@
+# Copyright (c) 2014 Jie Ma
+# http://jma.im
+# https://github.com/imjma/
+
 require 'nokogiri'
 require 'open-uri'
 require 'fileutils'
