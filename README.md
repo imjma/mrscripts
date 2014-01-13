@@ -9,6 +9,10 @@ Requirements
 $ gem install nokogiri
 ```
 
+
+Command
+======
+
 # pp.163.com
 ```bash
 $ ruby pp163.rb http://pp.163.com/kenziii/pp/11624042.html
@@ -23,3 +27,10 @@ $ ruby poco.rb -u http://my.poco.cn/lastphoto_v2-htx-id-3806596-user_id-64663251
 
 It will save all photos to folder called `poco_emarfer/poco_emarfer_[title]`
 or if you give `-f folder` argu it will save all photos to folder called `folder`
+
+# tuchong.com
+```bash
+$ ruby tuchong.rb http://tuchong.com/244569/6161107/
+```
+
+It will save all photos to folder called `tuchong_[author id]_[author name]/tuchong_[author name]_[title]`
