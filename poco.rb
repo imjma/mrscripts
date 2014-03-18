@@ -36,7 +36,6 @@ if options[:folder].nil?
   title = doc.css('div#user_intro h3.Title').first.content
   author = doc.css('span.page-copyright a').first.content
   author_url = doc.css('span.page-copyright a').first.text
-  author_uri = URI.parse(author_url)
   folder = File.join(File.expand_path("."), prefix + '_' + author, prefix + '_' + author + '_' + title)
 
   p "Title: " + title
