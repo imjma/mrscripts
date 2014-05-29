@@ -37,7 +37,7 @@ class NeteaseMusic
 
   def download(s)
     u = s['mp3Url']
-    saved_name = '%02d.%s - %s.mp3' % [s['position'], s['artists'][0]['name'], s['name']]
+    saved_name = '%s - %02d.%s.mp3' % [s['artists'][0]['name'], s['position'], s['name']]
     d = File.join(File.expand_path("."), saved_name)
     puts '  +++ downloading %s' % colorize(saved_name, 1, 91)
     puts
