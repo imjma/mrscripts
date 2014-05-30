@@ -10,16 +10,20 @@ require 'fileutils'
 
 class NeteaseMusic
 
-  attr_accessor :song_api, :headers
+  attr_accessor :api_song, :api_album, :headers
 
   def url_parser(url)
     u = URI.parse(url)
     q = CGI::parse(u.query)
-    return q['id'].first
+    id = q['id'].first
+    if url.match(/song/i)
+      download_song(id)
+    elsif url.match(/album/i)
+      download_album(id)
+    end
   end
 
-  def download_song(id)
-    uri = URI(self.song_api % [id, CGI::escape('['+id+']')])
+  def call_api(uri)
     req = Net::HTTP::Get.new(uri, @headers)
     res = Net::HTTP.start(uri.host, uri.port) { |http|
       http.request(req)
@@ -28,24 +32,45 @@ class NeteaseMusic
     if j['code'] == 200
       puts '  >>> ready to download'
       puts
-      s = j['songs'][0]
-      download(s)
+      return j
     else
-      puts ' !!! Error: %s ' % j['code']
+      abort ' !!! Error: %s ' % j['code']
     end
   end
 
-  def download(s)
-    u = s['mp3Url']
-    saved_name = '%s - %02d.%s.mp3' % [s['artists'][0]['name'], s['position'], s['name']]
-    d = File.join(File.expand_path("."), saved_name)
-    puts '  +++ downloading %s' % colorize(saved_name, 1, 91)
-    puts
-    if File.exist?(d)
-      puts "  !!! %s already exists in %s" % [saved_name, d]
-    else
-      File.write(d, open(u).read, {mode: 'wb'})
-      puts '### %s URL: %s -> %s' % [Time.now().strftime('%F %T'), u, d]
+  def download_song(id)
+    uri = URI(self.api_song % [id, CGI::escape('['+id+']')])
+    j = call_api(uri)
+    song = j['songs']
+    dir = File.expand_path(".")
+    download(song, dir)
+  end
+
+  def download_album(id)
+    uri = URI(self.api_album % id)
+    j = call_api(uri)
+    songs = j['album']['songs']
+    a = '%s - %s' % [j['album']['artist']['name'], j['album']['name']]
+    dir = File.join(File.expand_path("."), a)
+    download(songs, dir)
+  end
+
+  def download(songs, dir)
+    unless File.directory?(dir)
+      FileUtils.mkdir_p(dir)
+    end
+    songs.each_with_index do |s, k|
+      u = s['mp3Url']
+      saved_name = '%s - %02d.%s.mp3' % [s['artists'][0]['name'], s['position'], s['name']]
+      d = File.join(dir, saved_name)
+      puts '  +++ downloading #%d/#%d  %s' % [k, s.length,colorize(saved_name, 1, 91)]
+      puts
+      if File.exist?(d)
+        puts "  !!! %s already exists in %s" % [saved_name, d]
+      else
+        File.write(d, open(u).read, {mode: 'wb'})
+        puts '### %s URL: %s -> %s' % [Time.now().strftime('%F %T'), u, d]
+      end
     end
   end
 
@@ -56,12 +81,14 @@ class NeteaseMusic
   def main(url)
     puts '  --- analysis url...... '
     puts
-    sid = url_parser(url)
-    download_song(sid)
+    u = url.gsub(/#\//, '')
+    sid = url_parser(u)
+    # download_song(sid)
   end
 
   def initialize(url)
-    @song_api= 'http://music.163.com/api/song/detail?id=%s&ids=%s'
+    @api_song= 'http://music.163.com/api/song/detail?id=%s&ids=%s'
+    @api_album = 'http://music.163.com/api/album/%s'
     @headers = {
         "Accept" => "text/html,application/xhtml+xml,application/xml; " \
             "q=0.9,image/webp,*/*;q=0.8",
