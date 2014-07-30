@@ -10,10 +10,10 @@ require 'fileutils'
 url = ARGV[0]
 doc = Nokogiri::HTML(open(url))
 
-title = doc.css('.post-info hgroup h1').first.text.delete("\t").delete("\r").delete("\n").strip
+title = doc.css('.post-header-info h1').first.text.delete("\t").delete("\r").delete("\n").strip
 p "Title: " + title
 
-author = doc.css('.post-info .post-header-info a.site-anchor').first
+author = doc.css('.post-header-info a.site-icon').first
 p "Author: " + author['title'] + ' - ' + author['data-site-id']
 
 # saved folder
@@ -23,7 +23,7 @@ p "Saved folder: " + folder
 FileUtils.mkdir_p(folder) unless File.directory?(folder)
 
 # get all images url and download to local folder
-doc.css('div.container figure .theatre-view img').each do |img|
+doc.css('.figures-wrapper figure img').each do |img|
   uri = img['src']
   p uri
   File.write(File.join(folder, File.basename(uri)), open(uri).read, {mode: 'wb'})
