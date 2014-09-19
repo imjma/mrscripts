@@ -65,7 +65,7 @@ class NeteaseMusic
     # require 'json'
     # puts JSON.pretty_generate(j)
     songs = j['result']['tracks']
-    a = '%s - %s' % [j['result']['name'], j['result']['nickname']]
+    a = '%s - %s' % [j['result']['name'], j['result']['creator']['nickname']]
     dir = File.join(File.expand_path("."), a)
     download(songs, dir)
   end
@@ -76,8 +76,10 @@ class NeteaseMusic
     end
     songs.each_with_index do |s, k|
       u = s['mp3Url']
-      saved_name = '%s - %02d.%s.mp3' % [s['artists'][0]['name'], s['position'], s['name']]
+      n = s['name'].gsub(/\//, '-')
+      saved_name = '%s - %02d.%s.mp3' % [s['artists'][0]['name'], s['position'], n]
       d = File.join(dir, saved_name)
+      puts
       puts '  +++ downloading #%d/#%d  %s' % [k+1, songs.length,colorize(saved_name, 1, 91)]
       puts
       if File.exist?(d)
