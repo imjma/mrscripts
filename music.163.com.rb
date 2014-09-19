@@ -10,7 +10,7 @@ require 'fileutils'
 
 class NeteaseMusic
 
-  attr_accessor :api_song, :api_album, :headers
+  attr_accessor :api_song, :api_album, :api_playlist, :headers
 
   def url_parser(url)
     u = URI.parse(url)
@@ -20,6 +20,8 @@ class NeteaseMusic
       download_song(id)
     elsif url.match(/album/i)
       download_album(id)
+    elsif url.match(/playlist/i)
+      download_playlist(id)
     end
   end
 
@@ -49,8 +51,21 @@ class NeteaseMusic
   def download_album(id)
     uri = URI(self.api_album % id)
     j = call_api(uri)
+    # require 'json'
+    # puts JSON.pretty_generate(j)
     songs = j['album']['songs']
     a = '%s - %s' % [j['album']['artist']['name'], j['album']['name']]
+    dir = File.join(File.expand_path("."), a)
+    download(songs, dir)
+  end
+
+  def download_playlist(id)
+    uri = URI(self.api_playlist % [id, CGI::escape('['+id+']')])
+    j = call_api(uri)
+    # require 'json'
+    # puts JSON.pretty_generate(j)
+    songs = j['result']['tracks']
+    a = '%s - %s' % [j['result']['name'], j['result']['nickname']]
     dir = File.join(File.expand_path("."), a)
     download(songs, dir)
   end
@@ -63,7 +78,7 @@ class NeteaseMusic
       u = s['mp3Url']
       saved_name = '%s - %02d.%s.mp3' % [s['artists'][0]['name'], s['position'], s['name']]
       d = File.join(dir, saved_name)
-      puts '  +++ downloading #%d/#%d  %s' % [k, s.length,colorize(saved_name, 1, 91)]
+      puts '  +++ downloading #%d/#%d  %s' % [k+1, songs.length,colorize(saved_name, 1, 91)]
       puts
       if File.exist?(d)
         puts "  !!! %s already exists in %s" % [saved_name, d]
@@ -89,6 +104,7 @@ class NeteaseMusic
   def initialize(url)
     @api_song= 'http://music.163.com/api/song/detail?id=%s&ids=%s'
     @api_album = 'http://music.163.com/api/album/%s'
+    @api_playlist = 'http://music.163.com/api/playlist/detail?id=%s&ids=%s'
     @headers = {
         "Accept" => "text/html,application/xhtml+xml,application/xml; " \
             "q=0.9,image/webp,*/*;q=0.8",
