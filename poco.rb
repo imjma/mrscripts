@@ -50,7 +50,7 @@ FileUtils.mkdir_p(folder) unless File.directory?(folder)
 
 # get all images url and download to local folder
 doc.xpath('//img[@data_org_bimg]/@data_org_bimg').each do |img|
-  uri = img.value
+  uri = img.value.split('?').first
   p uri
   File.write(File.join(folder, File.basename(uri)), open(uri).read, {mode: 'wb'})
 end
