@@ -10,7 +10,16 @@ require 'fileutils'
 url = ARGV[0]
 doc = Nokogiri::HTML(open(url))
 
-title = doc.css('.post-header-info h1').first.text.delete("\t").delete("\r").delete("\n").strip
+header = doc.css('.post-header-info')
+
+title_node = header.css('h1').first
+
+if title_node
+  title = title_node.text.delete("\t").delete("\r").delete("\n").strip
+else
+  # get data-site-id if untitled
+  title = 'untitled_' + header.css('a').first['data-site-id']
+end
 p "Title: " + title
 
 author = doc.css('.post-header-info a.site-icon').first
