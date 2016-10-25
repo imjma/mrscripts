@@ -13,6 +13,9 @@ options = {}
 optparse = OptionParser.new do |opts|
   opts.banner = "Usage: %prog [options]"
 
+  opts.on('-d', '--photoid ID', "Mandatory Url") do |f|
+    options[:url] = 'http://photo.poco.cn/lastphoto-htx-id-' + f + '-p-0.xhtml'
+  end
   opts.on('-u', '--url URL', "Mandatory Url") do |f|
     options[:url] = f
   end
